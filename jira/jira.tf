@@ -22,7 +22,7 @@ resource "docker_network" "jira-network" {
 	name = "jira-network"
 	driver = "overlay"
 
-	options {
+	options = {
 		encrypted = ""
 	}
 }
@@ -59,7 +59,7 @@ resource "docker_container" "jira-database" {
 
 	command = ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_bin", "--default-storage-engine=INNODB", "--innodb-default-row-format=DYNAMIC", "--innodb-large-prefix=ON", "--innodb-file-format=Barracuda", "--innodb-log-file-size=2G"]
 
-	env {
+	env = {
 		MYSQL_ROOT_PASSWORD = var.mysql_root_password 
 		MYSQL_DATABASE = var.mysql_database
 		MYSQL_USER = var.mysql_user
@@ -108,7 +108,7 @@ resource "docker_container" "jira-server" {
 		resource = "container"
 	}
 
-	env {
+	env = {
 		JVM_MAXIMUM_MEMORY = "1400m"
 		ATL_PROXY_NAME = var.domain_name
 		ATL_PROXY_PORT = "443"
@@ -143,7 +143,7 @@ resource "docker_container" "jira-server" {
 
 data "template_file" "ingress_config" {
   template = "${file("Caddyfile.tpl")}"
-  vars {
+  vars = {
     domain_name = var.domain_name
   }
 }

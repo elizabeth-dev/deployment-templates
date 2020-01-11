@@ -22,6 +22,7 @@ resource "docker_network" "jira-network" {
 	name = "jira-network"
 	driver = "overlay"
 
+	attachable = true
 	options = {
 		encrypted = ""
 	}

@@ -30,11 +30,12 @@ resource "docker_network" "jira-network" {
 # DB
 
 resource "docker_image" "mysql" {
+	provider = docker.data
 	name = "mysql:5.7"
 }
 
 resource "docker_volume" "jira-database-volume" {
-	provider = docker.server
+	provider = docker.data
 	name = "DB-Volume"
 
 	labels = {
@@ -81,6 +82,7 @@ resource "docker_container" "jira-database" {
 # Server
 
 resource "docker_image" "jira" {
+	provider = docker.server
 	name = "atlassian/jira-software"
 }
 
@@ -142,6 +144,7 @@ resource "docker_container" "jira-server" {
 # Ingress
 
 resource "docker_image" "caddy" {
+	provider = docker.server
 	name = "abiosoft/caddy"
 }
 

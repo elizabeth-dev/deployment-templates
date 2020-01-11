@@ -59,12 +59,12 @@ resource "docker_container" "jira-database" {
 
 	command = ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_bin", "--default-storage-engine=INNODB", "--innodb-default-row-format=DYNAMIC", "--innodb-large-prefix=ON", "--innodb-file-format=Barracuda", "--innodb-log-file-size=2G"]
 
-	env = {
-		MYSQL_ROOT_PASSWORD = var.mysql_root_password 
-		MYSQL_DATABASE = var.mysql_database
-		MYSQL_USER = var.mysql_user
-		MYSQL_PASSWORD = var.mysql_password
-	}
+	env = [
+		"MYSQL_ROOT_PASSWORD=${var.mysql_root_password}",
+		"MYSQL_DATABASE=${var.mysql_database}",
+		"MYSQL_USER=${var.mysql_user}",
+		"MYSQL_PASSWORD=${var.mysql_password}"
+	]
 
 	networks_advanced {
 		name = "jira-network"
@@ -108,19 +108,19 @@ resource "docker_container" "jira-server" {
 		resource = "container"
 	}
 
-	env = {
-		JVM_MAXIMUM_MEMORY = "1400m"
-		ATL_PROXY_NAME = var.domain_name
-		ATL_PROXY_PORT = "443"
-		ATL_TOMCAT_PORT = "8080"
-		ATL_TOMCAT_SCHEME = "https"
-		ATL_TOMCAT_SECURE = "true"
-		ATL_JDBC_URL = "jdbc:mysql://Jira-DB/${var.mysql_database}?useSSL=false"
-		ATL_JDBC_USER = var.mysql_user
-		ATL_JDBC_PASSWORD = var.mysql_password
-		ATL_DB_DRIVER = "com.mysql.jdbc.Driver"
-		ATL_DB_TYPE = "mysql"
-	}
+	env = [
+		"VM_MAXIMUM_MEMORY=1400m",
+		"ATL_PROXY_NAME=${var.domain_name}",
+		"ATL_PROXY_PORT=443",
+		"ATL_TOMCAT_PORT=8080",
+		"ATL_TOMCAT_SCHEME=https",
+		"ATL_TOMCAT_SECURE=true",
+		"ATL_JDBC_URL=jdbc:mysql://Jira-DB/${var.mysql_database}?useSSL=false",
+		"ATL_JDBC_USER=${var.mysql_user}",
+		"ATL_JDBC_PASSWORD=${var.mysql_password}",
+		"ATL_DB_DRIVER=com.mysql.jdbc.Driver",
+		"ATL_DB_TYPE=mysql"
+	]
 
 	networks_advanced {
 		name = "jira-network"
@@ -175,7 +175,7 @@ resource "docker_container" "jira-ingress" {
 
 	upload {
 		content = <<EOT
-${domain_name} {
+${var.domain_name} {
 	proxy / http://Jira-Server:8080 {
 		websocket
 		transparent

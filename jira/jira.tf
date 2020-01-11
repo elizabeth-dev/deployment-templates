@@ -141,13 +141,6 @@ resource "docker_container" "jira-server" {
 
 # Ingress
 
-data "template_file" "ingress_config" {
-  template = "${file("Caddyfile.tpl")}"
-  vars = {
-    domain_name = var.domain_name
-  }
-}
-
 resource "docker_image" "caddy" {
 	name = "abiosoft/caddy"
 }
@@ -181,7 +174,14 @@ resource "docker_container" "jira-ingress" {
 	command = ["--conf=/etc/Caddyfile", "--log=stdout", "--quic", "--agree", "--email=gatetes@alba.sh"]
 
 	upload {
-		content = data.template_file.ingress_config.rendered
+		content = <<EOT
+${domain_name} {
+	proxy / http://Jira-Server:8080 {
+		websocket
+		transparent
+	}
+}
+		EOT
 		file = "/etc/Caddyfile"
 	}
 

@@ -37,7 +37,7 @@ resource "docker_volume" "jira-database-volume" {
 	provider = docker.server
 	name = "DB-Volume"
 
-	labels {
+	labels = {
 		component = "database"
 		sensitive = true
 		project = "jira"
@@ -50,7 +50,7 @@ resource "docker_container" "jira-database" {
 	name = "Jira-DB"
 	image = docker_image.mysql
 
-	labels {
+	labels = {
 		component = "database"
 		sensitive = false
 		project = "jira"
@@ -88,7 +88,7 @@ resource "docker_volume" "jira-server-volume" {
 	provider = docker.server
 	name = "Jira-Volume"
 
-	labels {
+	labels = {
 		component = "server"
 		sensitive = true
 		project = "jira"
@@ -101,7 +101,7 @@ resource "docker_container" "jira-server" {
 	name = "Jira-Server"
 	image = docker_image.jira
 
-	labels {
+	labels = {
 		component = "server"
 		sensitive = false
 		project = "jira"
@@ -134,7 +134,7 @@ resource "docker_container" "jira-server" {
 	}
 
 	upload {
-		content_base64 = base64encode(file("mysql-connector-java-5.1.48.jar"))
+		content_base64 = filebase64("mysql-connector-java-5.1.48.jar")
 		file = "/opt/atlassian/jira/lib/mysql-connector-java-5.1.48.jar"
 	}
 }
@@ -157,7 +157,7 @@ resource "docker_container" "jira-ingress" {
 	name = "Jira-Ingress"
 	image = docker_image.caddy
 
-	labels {
+	labels = {
 		component = "ingress"
 		sensitive = false
 		project = "jira"

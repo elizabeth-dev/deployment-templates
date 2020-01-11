@@ -49,7 +49,7 @@ resource "docker_volume" "jira-database-volume" {
 resource "docker_container" "jira-database" {
 	provider = docker.data
 	name = "Jira-DB"
-	image = docker_image.mysql
+	image = docker_image.mysql.latest
 
 	labels = {
 		component = "database"
@@ -101,7 +101,7 @@ resource "docker_volume" "jira-server-volume" {
 resource "docker_container" "jira-server" {
 	provider = docker.server
 	name = "Jira-Server"
-	image = docker_image.jira
+	image = docker_image.jira.latest
 
 	labels = {
 		component = "server"
@@ -151,7 +151,7 @@ resource "docker_image" "caddy" {
 resource "docker_container" "jira-ingress" {
 	provider = docker.server
 	name = "Jira-Ingress"
-	image = docker_image.caddy
+	image = docker_image.caddy.latest
 
 	labels = {
 		component = "ingress"

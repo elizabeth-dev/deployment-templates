@@ -16,7 +16,7 @@ provider "docker" {
 
 # Networking
 
-resource "docker_network" "jira-network" {
+resource "docker_network" "jira_network" {
 	provider = docker.server
 
 	name = "jira-network"
@@ -24,8 +24,15 @@ resource "docker_network" "jira-network" {
 
 	attachable = true
 	options = {
+		com.docker.network.driver.overlay.vxlanid_list = "4098"
 		encrypted = ""
 	}
+
+	/*lifecycle {
+		ignore_changes = [
+			options["com.docker.network.driver.overlay.vxlanid_list"]
+		]
+	}*/
 }
 
 # DB
@@ -35,7 +42,7 @@ resource "docker_image" "mysql" {
 	name = "mysql:5.7"
 }
 
-resource "docker_volume" "jira-database-volume" {
+resource "docker_volume" "jira_database_volume" {
 	provider = docker.data
 	name = "DB-Volume"
 
@@ -47,7 +54,7 @@ resource "docker_volume" "jira-database-volume" {
 	}
 }
 
-resource "docker_container" "jira-database" {
+resource "docker_container" "jira_database" {
 	provider = docker.data
 	name = "Jira-DB"
 	image = docker_image.mysql.latest
@@ -69,13 +76,13 @@ resource "docker_container" "jira-database" {
 	]
 
 	networks_advanced {
-		name = "jira-network"
+		name = jira_network.name
 	}
 
 	restart = "always"
 
 	volumes {
-		volume_name = "jira-database-volume"
+		volume_name = jira_database_volume.name
 		container_path = "/var/lib/mysql"
 	}
 }
@@ -87,7 +94,7 @@ resource "docker_image" "jira" {
 	name = "atlassian/jira-software"
 }
 
-resource "docker_volume" "jira-server-volume" {
+resource "docker_volume" "jira_server_volume" {
 	provider = docker.server
 	name = "Jira-Volume"
 
@@ -99,7 +106,7 @@ resource "docker_volume" "jira-server-volume" {
 	}
 }
 
-resource "docker_container" "jira-server" {
+resource "docker_container" "jira_server" {
 	provider = docker.server
 	name = "Jira-Server"
 	image = docker_image.jira.latest
@@ -118,7 +125,7 @@ resource "docker_container" "jira-server" {
 		"ATL_TOMCAT_PORT=8080",
 		"ATL_TOMCAT_SCHEME=https",
 		"ATL_TOMCAT_SECURE=true",
-		"ATL_JDBC_URL=jdbc:mysql://Jira-DB/${var.mysql_database}?useSSL=false",
+		"ATL_JDBC_URL=jdbc:mysql://${jira_database.name}/${var.mysql_database}?useSSL=false",
 		"ATL_JDBC_USER=${var.mysql_user}",
 		"ATL_JDBC_PASSWORD=${var.mysql_password}",
 		"ATL_DB_DRIVER=com.mysql.jdbc.Driver",
@@ -126,13 +133,13 @@ resource "docker_container" "jira-server" {
 	]
 
 	networks_advanced {
-		name = "jira-network"
+		name = jira_network.name
 	}
 
 	restart = "always"
 
 	volumes {
-		volume_name = "jira-server-volume"
+		volume_name = jira_server_volume.name
 		container_path = "/var/atlassian/application-data/jira"
 	}
 
@@ -149,7 +156,7 @@ resource "docker_image" "caddy" {
 	name = "abiosoft/caddy"
 }
 
-resource "docker_container" "jira-ingress" {
+resource "docker_container" "jira_ingress" {
 	provider = docker.server
 	name = "Jira-Ingress"
 	image = docker_image.caddy.latest
@@ -180,7 +187,7 @@ resource "docker_container" "jira-ingress" {
 	upload {
 		content = <<EOT
 ${var.domain_name} {
-	proxy / http://Jira-Server:8080 {
+	proxy / http://${jira_server.name}:8080 {
 		websocket
 		transparent
 	}
@@ -190,7 +197,7 @@ ${var.domain_name} {
 	}
 
 	networks_advanced {
-		name = "jira-network"
+		name = jira_network.name
 	}
 
 	restart = "always"

@@ -24,7 +24,7 @@ resource "docker_network" "jira_network" {
 
 	attachable = true
 	options = {
-		com.docker.network.driver.overlay.vxlanid_list = "4098"
+		"com.docker.network.driver.overlay.vxlanid_list" = "4098"
 		encrypted = ""
 	}
 
@@ -76,13 +76,13 @@ resource "docker_container" "jira_database" {
 	]
 
 	networks_advanced {
-		name = jira_network.name
+		name = docker_network.jira_network.name
 	}
 
 	restart = "always"
 
 	volumes {
-		volume_name = jira_database_volume.name
+		volume_name = docker_volume.jira_database_volume.name
 		container_path = "/var/lib/mysql"
 	}
 }
@@ -125,7 +125,7 @@ resource "docker_container" "jira_server" {
 		"ATL_TOMCAT_PORT=8080",
 		"ATL_TOMCAT_SCHEME=https",
 		"ATL_TOMCAT_SECURE=true",
-		"ATL_JDBC_URL=jdbc:mysql://${jira_database.name}/${var.mysql_database}?useSSL=false",
+		"ATL_JDBC_URL=jdbc:mysql://${docker_container.jira_database.name}/${var.mysql_database}?useSSL=false",
 		"ATL_JDBC_USER=${var.mysql_user}",
 		"ATL_JDBC_PASSWORD=${var.mysql_password}",
 		"ATL_DB_DRIVER=com.mysql.jdbc.Driver",
@@ -133,13 +133,13 @@ resource "docker_container" "jira_server" {
 	]
 
 	networks_advanced {
-		name = jira_network.name
+		name = docker_network.jira_network.name
 	}
 
 	restart = "always"
 
 	volumes {
-		volume_name = jira_server_volume.name
+		volume_name = docker_volume.jira_server_volume.name
 		container_path = "/var/atlassian/application-data/jira"
 	}
 
@@ -187,7 +187,7 @@ resource "docker_container" "jira_ingress" {
 	upload {
 		content = <<EOT
 ${var.domain_name} {
-	proxy / http://${jira_server.name}:8080 {
+	proxy / http://${docker_container.jira_server.name}:8080 {
 		websocket
 		transparent
 	}
@@ -197,7 +197,7 @@ ${var.domain_name} {
 	}
 
 	networks_advanced {
-		name = jira_network.name
+		name = docker_network.jira_network.name
 	}
 
 	restart = "always"

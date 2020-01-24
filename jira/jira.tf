@@ -125,9 +125,10 @@ resource "docker_container" "jira_server" {
 		"ATL_TOMCAT_PORT=8080",
 		"ATL_TOMCAT_SCHEME=https",
 		"ATL_TOMCAT_SECURE=true",
-		"ATL_JDBC_URL=jdbc:mysql://${docker_container.jira_database.name}/${var.mysql_database}?useSSL=false",
+		"ATL_JDBC_URL=jdbc:mysql://${docker_container.jira_database.name}?useSSL=false",
 		"ATL_JDBC_USER=${var.mysql_user}",
 		"ATL_JDBC_PASSWORD=${var.mysql_password}",
+		"ATL_DB_SCHEMA_NAME=${var.mysql_database}",
 		"ATL_DB_DRIVER=com.mysql.jdbc.Driver",
 		"ATL_DB_TYPE=mysql"
 	]

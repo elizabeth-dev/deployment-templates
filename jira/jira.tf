@@ -169,12 +169,12 @@ resource "docker_container" "jira_ingress" {
 	}
 
 	ports {
-		internal = 443
-		external = 443
-	}
-	ports {
 		internal = 80
 		external = 80
+	}
+	ports {
+		internal = 443
+		external = 443
 	}
 	ports {
 		internal = 443
